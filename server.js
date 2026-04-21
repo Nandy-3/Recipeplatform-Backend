@@ -9,12 +9,13 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL || 'https://recipeplatform-frontend.netlify.app',
-    credentials: true
-  })
-);
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://recipeplatform-frontend.netlify.app'
+  ],
+  credentials: true,
+}));
 
 app.use(express.json());
 
