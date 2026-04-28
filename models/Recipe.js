@@ -15,11 +15,11 @@ const recipeSchema = new mongoose.Schema(
       }
     ],
     steps: [{ type: String, required: true }],
-    prepTime: { type: Number, required: true }, // in minutes
-    cookTime: { type: Number, required: true }, // in minutes
+    prepTime: { type: Number, required: true },
+    cookTime: { type: Number, required: true },
     servings: { type: Number, required: true },
-    photos: [{ type: String }], // array of URLs
-    videoUrl: { type: String }, // YouTube embed URL
+    photos: [{ type: String }],
+    videoUrl: { type: String },
     tags: [{ type: String }],
     averageRating: { type: Number, default: 0 },
     ratingsCount: { type: Number, default: 0 }
@@ -34,6 +34,6 @@ recipeSchema.index({
   tags: 'text'
 });
 
-const Recipe = mongoose.model('Recipe', recipeSchema);
+const Recipe = mongoose.models.Recipe || mongoose.model('Recipe', recipeSchema);
 
 export default Recipe;

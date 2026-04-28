@@ -1,55 +1,120 @@
-import Recipe from '../models/Recipe.js';
+import Recipe from "../models/recipe.js";
 
+/**
+ * Helper: Convert YouTube URL → Embed URL
+ */
+const convertToEmbed = (url) => {
+  if (!url) return url;
+
+  const match = url.match(/(?:v=|youtu\.be\/)([^&]+)/);
+  return match ? `https://www.youtube.com/embed/${match[1]}` : url;
+};
+
+/**
+ * CREATE RECIPE
+ */
 export const createRecipe = async (req, res) => {
   try {
-    const newRecipe = new Recipe({
-      ...req.body,
-      author: req.user.id
-    });
+    const data = req.body;
 
-    const recipe = await newRecipe.save();
-    res.json(recipe);
+    // Attach logged-in user as author
+    data.author = req.user.id;
+
+    // Convert video URL if exists
+    if (data.videoUrl) {
+      data.videoUrl = convertToEmbed(data.videoUrl);
+    }
+
+    const recipe = await Recipe.create(data);
+
+    res.status(201).json(recipe);
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
 
+/**
+ * GET ALL RECIPES (with search)
+ */
 export const getRecipes = async (req, res) => {
   try {
-    const { search, tags, limit = 20, skip = 0 } = req.query;
+    const { search } = req.query;
 
     let query = {};
 
     if (search) {
-      query.$text = { $search: search };
-    }
-
-    if (tags) {
-      query.tags = { $in: tags.split(',') };
+      query = { $text: { $search: search } };
     }
 
     const recipes = await Recipe.find(query)
-      .populate('author', 'username profilePicture')
-      .sort(search ? { score: { $meta: 'textScore' } } : { createdAt: -1 })
-      .skip(Number(skip))
-      .limit(Number(limit));
+      .populate("author", "username profilePicture")
+      .sort({ createdAt: -1 });
 
     res.json(recipes);
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
 
+/**
+ * GET SINGLE RECIPE
+ */
 export const getRecipeById = async (req, res) => {
   try {
     const recipe = await Recipe.findById(req.params.id)
-      .populate('author', 'username profilePicture bio');
+      .populate("author", "username profilePicture");
 
-    if (!recipe)
-      return res.status(404).json({ message: 'Recipe not found' });
+    if (!recipe) {
+      return res.status(404).json({ message: "Recipe not found" });
+    }
 
     res.json(recipe);
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: err.message });
+  }
+};
+
+/**
+ * UPDATE RECIPE
+ */
+export const updateRecipe = async (req, res) => {
+  try {
+    const data = req.body;
+
+    // Convert video URL if exists
+    if (data.videoUrl) {
+      data.videoUrl = convertToEmbed(data.videoUrl);
+    }
+
+    const updatedRecipe = await Recipe.findByIdAndUpdate(
+      req.params.id,
+      data,
+      { new: true }
+    );
+
+    if (!updatedRecipe) {
+      return res.status(404).json({ message: "Recipe not found" });
+    }
+
+    res.json(updatedRecipe);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+/**
+ * DELETE RECIPE
+ */
+export const deleteRecipe = async (req, res) => {
+  try {
+    const deleted = await Recipe.findByIdAndDelete(req.params.id);
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Recipe not found" });
+    }
+
+    res.json({ message: "Recipe deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
