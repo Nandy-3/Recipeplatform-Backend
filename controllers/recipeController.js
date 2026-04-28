@@ -1,4 +1,4 @@
-import Recipe from "../models/recipe.js";
+import Recipe from '../models/Recipe.js';
 
 /**
  * Helper: Convert YouTube URL → Embed URL
