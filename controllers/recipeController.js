@@ -1,29 +1,13 @@
 import Recipe from '../models/Recipe.js';
 
 /**
- * Helper: Convert YouTube URL → Embed URL
- */
-const convertToEmbed = (url) => {
-  if (!url) return url;
-
-  const match = url.match(/(?:v=|youtu\.be\/)([^&]+)/);
-  return match ? `https://www.youtube.com/embed/${match[1]}` : url;
-};
-
-/**
  * CREATE RECIPE
  */
 export const createRecipe = async (req, res) => {
   try {
     const data = req.body;
 
-    // Attach logged-in user as author
     data.author = req.user.id;
-
-    // Convert video URL if exists
-    if (data.videoUrl) {
-      data.videoUrl = convertToEmbed(data.videoUrl);
-    }
 
     const recipe = await Recipe.create(data);
 
@@ -34,7 +18,7 @@ export const createRecipe = async (req, res) => {
 };
 
 /**
- * GET ALL RECIPES (with search)
+ * GET ALL RECIPES
  */
 export const getRecipes = async (req, res) => {
   try {
@@ -47,7 +31,7 @@ export const getRecipes = async (req, res) => {
     }
 
     const recipes = await Recipe.find(query)
-      .populate("author", "username profilePicture")
+      .populate('author', 'username profilePicture')
       .sort({ createdAt: -1 });
 
     res.json(recipes);
@@ -62,10 +46,10 @@ export const getRecipes = async (req, res) => {
 export const getRecipeById = async (req, res) => {
   try {
     const recipe = await Recipe.findById(req.params.id)
-      .populate("author", "username profilePicture");
+      .populate('author', 'username profilePicture');
 
     if (!recipe) {
-      return res.status(404).json({ message: "Recipe not found" });
+      return res.status(404).json({ message: 'Recipe not found' });
     }
 
     res.json(recipe);
@@ -79,21 +63,14 @@ export const getRecipeById = async (req, res) => {
  */
 export const updateRecipe = async (req, res) => {
   try {
-    const data = req.body;
-
-    // Convert video URL if exists
-    if (data.videoUrl) {
-      data.videoUrl = convertToEmbed(data.videoUrl);
-    }
-
     const updatedRecipe = await Recipe.findByIdAndUpdate(
       req.params.id,
-      data,
+      req.body,
       { new: true }
     );
 
     if (!updatedRecipe) {
-      return res.status(404).json({ message: "Recipe not found" });
+      return res.status(404).json({ message: 'Recipe not found' });
     }
 
     res.json(updatedRecipe);
@@ -110,10 +87,10 @@ export const deleteRecipe = async (req, res) => {
     const deleted = await Recipe.findByIdAndDelete(req.params.id);
 
     if (!deleted) {
-      return res.status(404).json({ message: "Recipe not found" });
+      return res.status(404).json({ message: 'Recipe not found' });
     }
 
-    res.json({ message: "Recipe deleted successfully" });
+    res.json({ message: 'Recipe deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
