@@ -18,7 +18,7 @@ export const createRecipe = async (req, res) => {
 };
 
 /**
- * GET ALL RECIPES
+ * GET ALL RECIPES + SEARCH
  */
 export const getRecipes = async (req, res) => {
   try {
@@ -27,7 +27,16 @@ export const getRecipes = async (req, res) => {
     let query = {};
 
     if (search) {
-      query = { $text: { $search: search } };
+      query = {
+        $or: [
+          {
+            title: { $regex: search, $options: 'i' }
+          },
+          {
+            tags: { $regex: search, $options: 'i' }
+          }
+        ]
+      };
     }
 
     const recipes = await Recipe.find(query)
