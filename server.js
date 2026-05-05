@@ -27,9 +27,6 @@ app.use(
 /* Body parser */
 app.use(express.json());
 
-/* Static folder for uploaded images */
-app.use("/uploads", express.static("uploads"));
-
 /* Routes */
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);

@@ -29,9 +29,7 @@ export const getCurrentUserProfile = async (req, res) => {
 /* GET USER BY ID */
 export const getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select(
-      "-password"
-    );
+    const user = await User.findById(req.params.id).select("-password");
 
     if (!user) {
       return res.status(404).json({
@@ -69,7 +67,9 @@ export const toggleSaveRecipe = async (req, res) => {
 
     const recipeId = req.params.recipeId;
 
-    const index = user.savedRecipes.indexOf(recipeId);
+    const index = user.savedRecipes.findIndex(
+      (id) => id.toString() === recipeId
+    );
 
     if (index === -1) {
       user.savedRecipes.push(recipeId);
@@ -100,10 +100,9 @@ export const updateProfile = async (req, res) => {
       updateData.bio = bio;
     }
 
+    /* CLOUDINARY IMAGE URL */
     if (req.file) {
-      updateData.profilePicture = `${req.protocol}://${req.get(
-        "host"
-      )}/uploads/${req.file.filename}`;
+      updateData.profilePicture = req.file.path;
     }
 
     const updatedUser = await User.findByIdAndUpdate(
